@@ -3,5 +3,6 @@ from django.urls import path
 from cleanControl import views
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),  # главная страница
+    path("check-cars/", views.check_cars, name="check_cars"),
 ]
+
