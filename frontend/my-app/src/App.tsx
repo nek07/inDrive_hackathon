@@ -1,7 +1,8 @@
 // App.tsx
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import UploadPage from "./pages/UploadPage";
-
+import AnalysisResults from "./pages/AnalysisResults";
+import ResultsPage from "./pages/ResultsPage";
 export default function App() {
   return (
     <BrowserRouter>
@@ -12,6 +13,8 @@ export default function App() {
 
       <Routes>
         <Route path="/upload" element={<UploadPage />} />
+        <Route path="/analysis" element={<AnalysisResults />} />
+        <Route path="/results" element={<ResultsPage />} />
       </Routes>
     </BrowserRouter>
   );

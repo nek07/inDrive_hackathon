@@ -3,7 +3,7 @@ import { useState } from "react";
 import { PhotoUploadCard } from "../components/PhotoUploadCard";
 import { Button } from "../components/ui/button";
 import { Upload } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 interface PhotoData {
     id: string;
     title: string;
@@ -34,8 +34,10 @@ export default function UploadPage() {
         );
     };
 
+    const navigate = useNavigate();
+
     const handleSubmit = async () => {
-        // берем только фото, где image не null
+        // Фильтруем фото, где image точно есть
         const uploadedPhotos = photos.filter(photo => photo.image !== null);
 
         if (uploadedPhotos.length === 0) {
@@ -45,29 +47,46 @@ export default function UploadPage() {
 
         const formData = new FormData();
 
-        for (const photo of uploadedPhotos) {
-            if (photo.image) {  // проверка на null
+        try {
+            // Создаем файлы из image URL
+            for (let i = 0; i < uploadedPhotos.length; i++) {
+                const photo = uploadedPhotos[i];
+                if (!photo.image) continue;
+
                 const res = await fetch(photo.image);
+                if (!res.ok) throw new Error(`Не удалось загрузить фото ${photo.id}`);
+
                 const blob = await res.blob();
                 const file = new File([blob], `${photo.id}.jpg`, { type: "image/jpeg" });
-                formData.append("photos", file);
+                formData.append(`image${i + 1}`, file);
             }
-        }
 
-        try {
-            const response = await fetch("/car-check/", {
+            // Отправляем форму на сервер
+            const response = await fetch("http://127.0.0.1:8000/check-cars/", {
                 method: "POST",
-                body: formData,
+                body: formData
             });
 
-            const data = await response.json();
+            if (!response.ok) {
+                console.error("Сервер вернул ошибку:", response.status, response.statusText);
+                alert("Ошибка на сервере при отправке фото");
+                return;
+            }
+
+            // Получаем JSON с сервера
+            const text = await response.text();
+            const data = text ? JSON.parse(text) : {};
             console.log("Ответ с сервера:", data);
-            alert("Фотографии отправлены, смотрите консоль для ответа");
+
+            // Навигация на страницу результатов
+            navigate("/results", { state: data });
+
         } catch (err) {
-            console.error(err);
+            console.error("Ошибка при отправке фото:", err);
             alert("Ошибка при отправке фото");
         }
     };
+
 
 
     return (
